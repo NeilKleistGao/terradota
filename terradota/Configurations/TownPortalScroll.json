@@ -1,0 +1,19 @@
+{
+  "name": "TownPortalScroll",
+  "description": "teleports you to home.",
+  "showName": "Town Portal Scroll",
+  "default": {
+    "damage": 0,
+    "DamageType": ["DamageClass", "Summon"],
+    "width": 40,
+    "height": 40,
+    "useTime": 20,
+    "useAnimation": 20,
+    "useStyle": ["ItemUseStyleID", "RaiseLamp"],
+    "knockBack": 0,
+    "rare": 2,
+    "UseSound": ["SoundID", "Run"],
+    "maxStack": 99,
+    "mana": 10
+  }
+}
