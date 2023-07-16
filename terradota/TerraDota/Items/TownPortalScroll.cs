@@ -7,5 +7,16 @@ namespace TerraDota.Items
 {
     public class TownPortalScroll : ModItem
     {
+        public override void SetStaticDefaults()
+        {
+        }
+
+        public override void SetDefaults()
+        {
+        }
+
+        public override void AddRecipes()
+        {
+        }
     }
 }

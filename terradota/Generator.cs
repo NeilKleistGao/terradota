@@ -62,6 +62,19 @@ namespace terradota {
       return SyntaxFactory.UsingDirective(SyntaxFactory.IdentifierName(ns));
     }
 
+    private MethodDeclarationSyntax Func(string name, string type, bool isPublic, bool overrided, BlockSyntax body) {
+      var method = SyntaxFactory.MethodDeclaration(SyntaxFactory.ParseTypeName(type), name);
+      method = method.WithBody(body);
+      if (isPublic) {
+        method = method.AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword));
+      }
+      if (overrided) {
+        method = method.AddModifiers(SyntaxFactory.Token(SyntaxKind.OverrideKeyword));
+      }
+
+      return method;
+    }
+
     private void Init() {
       mRoot = mRoot.AddUsings(Using("Terraria"));
       mRoot = mRoot.AddUsings(Using("Terraria.ID"));
@@ -70,13 +83,21 @@ namespace terradota {
       var cls = SyntaxFactory.ClassDeclaration(mItemName);
       cls = cls.AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword));
       cls = cls.AddBaseListTypes(SyntaxFactory.SimpleBaseType(SyntaxFactory.IdentifierName(PARENT)));
+      cls = cls.AddMembers(Func("SetStaticDefaults", "void", true, true, SyntaxFactory.Block()));
+      cls = cls.AddMembers(Func("SetDefaults", "void", true, true, SyntaxFactory.Block()));
+      cls = cls.AddMembers(Func("AddRecipes", "void", true, true, SyntaxFactory.Block()));
+      // cls = cls.AddMembers(Func("UseItem", "bool?", true, true, SyntaxFactory.Block())); // TODO
 
-      mRoot = mRoot.AddMembers(SyntaxFactory.NamespaceDeclaration(
+      mClass = mOriginCls = cls;
+      var ns = SyntaxFactory.NamespaceDeclaration(
         SyntaxFactory.IdentifierName(NAMESPACE),
         new SyntaxList<ExternAliasDirectiveSyntax>(),
         new SyntaxList<UsingDirectiveSyntax>(),
         new SyntaxList<MemberDeclarationSyntax>(cls)
-      ));
+      );
+      mNamespace = mOriginNS = ns;
+
+      mRoot = mRoot.AddMembers(ns);
 
       var comment = SyntaxFactory.Comment(HEAD);
       mRoot = mRoot.WithLeadingTrivia(comment);
