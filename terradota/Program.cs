@@ -18,6 +18,10 @@ foreach (string file in configurationFiles) {
   reader.Close();
 
   var generator = new Generator(itemName, outputFile);
+  if (obj.ContainsKey("description")) { // FIXME: make it work
+    generator.Tooltip = obj.GetValue("description").Value<string>();
+  }
+
   generator.Generate();
   reader.Close();
 }

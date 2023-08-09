@@ -9,6 +9,7 @@ namespace TerraDota.Items
     {
         public override void SetStaticDefaults()
         {
+            Tooltip.SetDefault("");
         }
 
         public override void SetDefaults()
@@ -17,6 +18,11 @@ namespace TerraDota.Items
 
         public override void AddRecipes()
         {
+        }
+
+        public override bool? UseItem()
+        {
+            return true;
         }
     }
 }

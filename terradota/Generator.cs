@@ -83,10 +83,20 @@ namespace terradota {
       var cls = SyntaxFactory.ClassDeclaration(mItemName);
       cls = cls.AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword));
       cls = cls.AddBaseListTypes(SyntaxFactory.SimpleBaseType(SyntaxFactory.IdentifierName(PARENT)));
-      cls = cls.AddMembers(Func("SetStaticDefaults", "void", true, true, SyntaxFactory.Block()));
+      cls = cls.AddMembers(Func("SetStaticDefaults", "void", true, true, SyntaxFactory.Block(
+        SyntaxFactory.ExpressionStatement(SyntaxFactory.InvocationExpression(
+          SyntaxFactory.MemberAccessExpression(
+            SyntaxKind.SimpleMemberAccessExpression, SyntaxFactory.IdentifierName("Tooltip"), SyntaxFactory.IdentifierName("SetDefault")
+            ),
+          SyntaxFactory.ArgumentList(SyntaxFactory.SeparatedList<ArgumentSyntax>(
+            new ArgumentSyntax[] { SyntaxFactory.Argument(SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(Tooltip))) }
+          ))
+        )))));
       cls = cls.AddMembers(Func("SetDefaults", "void", true, true, SyntaxFactory.Block()));
       cls = cls.AddMembers(Func("AddRecipes", "void", true, true, SyntaxFactory.Block()));
-      // cls = cls.AddMembers(Func("UseItem", "bool?", true, true, SyntaxFactory.Block())); // TODO
+      cls = cls.AddMembers(Func("UseItem", "bool?", true, true, SyntaxFactory.Block(
+        SyntaxFactory.ReturnStatement(SyntaxFactory.LiteralExpression(SyntaxKind.TrueLiteralExpression))
+        )));
 
       mClass = mOriginCls = cls;
       var ns = SyntaxFactory.NamespaceDeclaration(
