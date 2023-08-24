@@ -18,8 +18,10 @@ foreach (string file in configurationFiles) {
   reader.Close();
 
   var generator = new Generator(itemName, outputFile);
-  if (obj.ContainsKey("description")) { // FIXME: make it work
-    generator.Tooltip = obj.GetValue("description").Value<string>();
+  if (obj.GetValue("description") is JToken description) {
+    if (description.Value<string>() is string s) {
+      generator.Tooltip = s;
+    }
   }
 
   generator.Generate();

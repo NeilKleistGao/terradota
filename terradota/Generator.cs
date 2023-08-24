@@ -88,7 +88,7 @@ namespace terradota {
           SyntaxFactory.MemberAccessExpression(
             SyntaxKind.SimpleMemberAccessExpression, SyntaxFactory.IdentifierName("Tooltip"), SyntaxFactory.IdentifierName("SetDefault")
             ),
-          SyntaxFactory.ArgumentList(SyntaxFactory.SeparatedList<ArgumentSyntax>(
+          SyntaxFactory.ArgumentList(SyntaxFactory.SeparatedList(
             new ArgumentSyntax[] { SyntaxFactory.Argument(SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(Tooltip))) }
           ))
         )))));
