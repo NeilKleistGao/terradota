@@ -18,7 +18,7 @@ namespace terradota {
     public Generator(string itemName, string outputFilename) {
       mItemName = itemName;
       mFilename = outputFilename;
-      Tooltip = ""; ShowName = itemName;
+      ShowName = itemName;
 
       bool inited = true;
       if (!File.Exists(mFilename)) {
@@ -83,15 +83,7 @@ namespace terradota {
       var cls = SyntaxFactory.ClassDeclaration(mItemName);
       cls = cls.AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword));
       cls = cls.AddBaseListTypes(SyntaxFactory.SimpleBaseType(SyntaxFactory.IdentifierName(PARENT)));
-      cls = cls.AddMembers(Func("SetStaticDefaults", "void", true, true, SyntaxFactory.Block(
-        SyntaxFactory.ExpressionStatement(SyntaxFactory.InvocationExpression(
-          SyntaxFactory.MemberAccessExpression(
-            SyntaxKind.SimpleMemberAccessExpression, SyntaxFactory.IdentifierName("Tooltip"), SyntaxFactory.IdentifierName("SetDefault")
-            ),
-          SyntaxFactory.ArgumentList(SyntaxFactory.SeparatedList(
-            new ArgumentSyntax[] { SyntaxFactory.Argument(SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(Tooltip))) }
-          ))
-        )))));
+      cls = SetTooltip(cls, "");
       cls = cls.AddMembers(Func("SetDefaults", "void", true, true, SyntaxFactory.Block()));
       cls = cls.AddMembers(Func("AddRecipes", "void", true, true, SyntaxFactory.Block()));
       cls = cls.AddMembers(Func("UseItem", "bool?", true, true, SyntaxFactory.Block(
@@ -138,8 +130,56 @@ namespace terradota {
       writer.Close();
     }
 
+    private bool isTargetMethod(MemberDeclarationSyntax member, string name) {
+      if (member is MethodDeclarationSyntax method) {
+        return method.Identifier.Text == name;
+      }
+
+      return false;
+    }
+
+    private ClassDeclarationSyntax UpdateClassMember(ClassDeclarationSyntax cls, string name, MemberDeclarationSyntax newMem) {
+      var origins = (from mem in cls.Members
+                     where isTargetMethod(mem, name)
+                     select mem).ToList();
+      if (origins.Count == 0) {
+        mUpdated = true;
+        return cls.AddMembers(newMem);
+      }
+      else {
+        mUpdated = true;
+        return cls.Update(
+          cls.AttributeLists,
+          cls.Modifiers,
+          cls.Keyword,
+          cls.Identifier,
+          cls.TypeParameterList,
+          cls.BaseList,
+          cls.ConstraintClauses,
+          cls.OpenBraceToken,
+          cls.Members.Replace(origins.First(), newMem),
+          cls.CloseBraceToken,
+          cls.SemicolonToken
+        );
+      }
+    }
+
+    private ClassDeclarationSyntax SetTooltip(ClassDeclarationSyntax cls, string tip) {
+      return UpdateClassMember(cls, "SetStaticDefaults", Func("SetStaticDefaults", "void", true, true, SyntaxFactory.Block(
+        SyntaxFactory.ExpressionStatement(SyntaxFactory.InvocationExpression(
+          SyntaxFactory.MemberAccessExpression(
+            SyntaxKind.SimpleMemberAccessExpression, SyntaxFactory.IdentifierName("Tooltip"), SyntaxFactory.IdentifierName("SetDefault")
+            ),
+          SyntaxFactory.ArgumentList(SyntaxFactory.SeparatedList(
+            new ArgumentSyntax[] { SyntaxFactory.Argument(SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(tip))) }
+          ))
+        )))));
+    }
+
     public string Tooltip {
-      set; private get;
+      set {
+        if (mClass is ClassDeclarationSyntax cls) mClass = SetTooltip(cls, value);
+      }
     }
 
     public string ShowName {

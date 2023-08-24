@@ -9,7 +9,7 @@ namespace TerraDota.Items
     {
         public override void SetStaticDefaults()
         {
-            Tooltip.SetDefault("");
+            Tooltip.SetDefault("teleports you to home.");
         }
 
         public override void SetDefaults()
