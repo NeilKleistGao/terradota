@@ -1,6 +1,4 @@
-﻿using System.IO;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+﻿using System.Text.Json;
 using terradota;
 
 const string configurationPath = "../../../Configurations";
@@ -12,18 +10,11 @@ foreach (string file in configurationFiles) {
   string itemName = fileInfo.Name.Substring(0, fileInfo.Name.Length - fileInfo.Extension.Length);
   string outputFile = Path.Combine(outputPath, itemName + ".cs");
 
-  var reader = new StreamReader(fileInfo.FullName);
-  string config = reader.ReadToEnd();
-  var obj = JObject.Parse(config);
-  reader.Close();
+  string config = File.ReadAllText(fileInfo.FullName);
+  var data = JsonSerializer.Deserialize<ConfigData>(config);
 
   var generator = new Generator(itemName, outputFile);
-  if (obj.GetValue("description") is JToken description) {
-    if (description.Value<string>() is string s) {
-      generator.Tooltip = s;
-    }
-  }
+  generator.Tooltip = data.description;
 
   generator.Generate();
-  reader.Close();
 }

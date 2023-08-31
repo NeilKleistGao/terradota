@@ -18,7 +18,6 @@ namespace terradota {
     public Generator(string itemName, string outputFilename) {
       mItemName = itemName;
       mFilename = outputFilename;
-      ShowName = itemName;
 
       bool inited = true;
       if (!File.Exists(mFilename)) {
@@ -180,10 +179,6 @@ namespace terradota {
       set {
         if (mClass is ClassDeclarationSyntax cls) mClass = SetTooltip(cls, value);
       }
-    }
-
-    public string ShowName {
-      set; private get;
     }
   }
 }

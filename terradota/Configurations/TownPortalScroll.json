@@ -1,8 +1,8 @@
 {
   "name": "TownPortalScroll",
   "description": "teleports you to home.",
-  "showName": "Town Portal Scroll",
   "default": {
+    "showName": "Town Portal Scroll",
     "damage": 0,
     "DamageType": ["DamageClass", "Summon"],
     "width": 40,
