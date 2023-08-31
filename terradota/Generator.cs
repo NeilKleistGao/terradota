@@ -163,21 +163,57 @@ namespace terradota {
       }
     }
 
+    private LiteralExpressionSyntax StrLit(string val) {
+      return SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(val));
+    }
+
+    private LiteralExpressionSyntax IntLit(int val) {
+      return SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(val));
+    }
+
+    private MemberAccessExpressionSyntax Access(string receiver, string field) {
+      return SyntaxFactory.MemberAccessExpression(
+        SyntaxKind.SimpleMemberAccessExpression, SyntaxFactory.IdentifierName(receiver), SyntaxFactory.IdentifierName(field)
+      );
+    }
+
+    private ExpressionStatementSyntax Assign(ExpressionSyntax lhs, ExpressionSyntax rhs) {
+      return SyntaxFactory.ExpressionStatement(
+          SyntaxFactory.AssignmentExpression(
+            SyntaxKind.SimpleAssignmentExpression, lhs, rhs
+          )
+        );
+    }
+
+    private ExpressionStatementSyntax CallSet(ExpressionSyntax callee, ArgumentSyntax[] args) {
+      return SyntaxFactory.ExpressionStatement(SyntaxFactory.InvocationExpression(
+          callee,
+          SyntaxFactory.ArgumentList(SyntaxFactory.SeparatedList(args))
+        ));
+    }
+
     private ClassDeclarationSyntax SetTooltip(ClassDeclarationSyntax cls, string tip) {
       return UpdateClassMember(cls, "SetStaticDefaults", Func("SetStaticDefaults", "void", true, true, SyntaxFactory.Block(
-        SyntaxFactory.ExpressionStatement(SyntaxFactory.InvocationExpression(
-          SyntaxFactory.MemberAccessExpression(
-            SyntaxKind.SimpleMemberAccessExpression, SyntaxFactory.IdentifierName("Tooltip"), SyntaxFactory.IdentifierName("SetDefault")
-            ),
-          SyntaxFactory.ArgumentList(SyntaxFactory.SeparatedList(
-            new ArgumentSyntax[] { SyntaxFactory.Argument(SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(tip))) }
-          ))
-        )))));
+        CallSet(Access("Tooltip", "SetDefault"), new ArgumentSyntax[] { SyntaxFactory.Argument(StrLit(tip)) })
+        )));
+    }
+
+    private ClassDeclarationSyntax SetDefault(ClassDeclarationSyntax cls, DefaultData @default) {
+      return UpdateClassMember(cls, "SetDefaults", Func("SetDefaults", "void", true, true, SyntaxFactory.Block(
+        CallSet(Access("Item", "SetNameOverride"), new ArgumentSyntax[] { SyntaxFactory.Argument(StrLit(@default.showName)) }),
+        Assign(Access("Item", "damage"), IntLit(@default.damage))
+      )));
     }
 
     public string Tooltip {
       set {
         if (mClass is ClassDeclarationSyntax cls) mClass = SetTooltip(cls, value);
+      }
+    }
+
+    public DefaultData Default {
+      set {
+        if (mClass is ClassDeclarationSyntax cls) mClass = SetDefault(cls, value);
       }
     }
   }

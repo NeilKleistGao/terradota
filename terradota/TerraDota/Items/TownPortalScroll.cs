@@ -14,6 +14,8 @@ namespace TerraDota.Items
 
         public override void SetDefaults()
         {
+            Item.SetNameOverride("Town Portal Scroll");
+            Item.damage = 0;
         }
 
         public override void AddRecipes()

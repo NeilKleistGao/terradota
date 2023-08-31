@@ -15,6 +15,7 @@ foreach (string file in configurationFiles) {
 
   var generator = new Generator(itemName, outputFile);
   generator.Tooltip = data.description;
+  generator.Default = data.@default;
 
   generator.Generate();
 }
