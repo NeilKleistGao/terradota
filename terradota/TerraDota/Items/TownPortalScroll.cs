@@ -22,7 +22,7 @@ namespace TerraDota.Items
         {
         }
 
-        public override bool? UseItem()
+        public override bool? UseItem(Player player)
         {
             return true;
         }

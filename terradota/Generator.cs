@@ -31,6 +31,7 @@ namespace terradota {
       mRoot = (CompilationUnitSyntax)syntaxTree.GetRoot();
       if (!inited) {
         Init();
+        mUpdated = false;
         Generate();
       }
 
@@ -58,11 +59,12 @@ namespace terradota {
     }
 
     private UsingDirectiveSyntax Using(string ns) {
-      return SyntaxFactory.UsingDirective(SyntaxFactory.IdentifierName(ns));
+      return SyntaxFactory.UsingDirective(ID(ns));
     }
 
-    private MethodDeclarationSyntax Func(string name, string type, bool isPublic, bool overrided, BlockSyntax body) {
+    private MethodDeclarationSyntax Func(string name, string type, bool isPublic, bool overrided, ParameterListSyntax paramsList, BlockSyntax body) {
       var method = SyntaxFactory.MethodDeclaration(SyntaxFactory.ParseTypeName(type), name);
+      method = method.WithParameterList(paramsList);
       method = method.WithBody(body);
       if (isPublic) {
         method = method.AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword));
@@ -74,6 +76,10 @@ namespace terradota {
       return method;
     }
 
+    private ParameterSyntax Param(string type, string name) {
+      return SyntaxFactory.Parameter(default, default(SyntaxTokenList), SyntaxFactory.ParseTypeName(type), SyntaxFactory.Identifier(name), default);
+    }
+
     private void Init() {
       mRoot = mRoot.AddUsings(Using("Terraria"));
       mRoot = mRoot.AddUsings(Using("Terraria.ID"));
@@ -81,17 +87,18 @@ namespace terradota {
 
       var cls = SyntaxFactory.ClassDeclaration(mItemName);
       cls = cls.AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword));
-      cls = cls.AddBaseListTypes(SyntaxFactory.SimpleBaseType(SyntaxFactory.IdentifierName(PARENT)));
+      cls = cls.AddBaseListTypes(SyntaxFactory.SimpleBaseType(ID(PARENT)));
       cls = SetTooltip(cls, "");
-      cls = cls.AddMembers(Func("SetDefaults", "void", true, true, SyntaxFactory.Block()));
-      cls = cls.AddMembers(Func("AddRecipes", "void", true, true, SyntaxFactory.Block()));
-      cls = cls.AddMembers(Func("UseItem", "bool?", true, true, SyntaxFactory.Block(
+      cls = cls.AddMembers(Func("SetDefaults", "void", true, true, SyntaxFactory.ParameterList(), SyntaxFactory.Block()));
+      cls = cls.AddMembers(Func("AddRecipes", "void", true, true, SyntaxFactory.ParameterList(), SyntaxFactory.Block()));
+      cls = cls.AddMembers(Func("UseItem", "bool?", true, true, SyntaxFactory.ParameterList(
+        SyntaxFactory.SeparatedList(new ParameterSyntax[] { Param("Player", "player") })), SyntaxFactory.Block(
         SyntaxFactory.ReturnStatement(SyntaxFactory.LiteralExpression(SyntaxKind.TrueLiteralExpression))
         )));
 
       mClass = mOriginCls = cls;
       var ns = SyntaxFactory.NamespaceDeclaration(
-        SyntaxFactory.IdentifierName(NAMESPACE),
+        ID(NAMESPACE),
         new SyntaxList<ExternAliasDirectiveSyntax>(),
         new SyntaxList<UsingDirectiveSyntax>(),
         new SyntaxList<MemberDeclarationSyntax>(cls)
@@ -163,6 +170,10 @@ namespace terradota {
       }
     }
 
+    private IdentifierNameSyntax ID(string name) {
+      return SyntaxFactory.IdentifierName(name);
+    }
+
     private LiteralExpressionSyntax StrLit(string val) {
       return SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(val));
     }
@@ -173,7 +184,7 @@ namespace terradota {
 
     private MemberAccessExpressionSyntax Access(string receiver, string field) {
       return SyntaxFactory.MemberAccessExpression(
-        SyntaxKind.SimpleMemberAccessExpression, SyntaxFactory.IdentifierName(receiver), SyntaxFactory.IdentifierName(field)
+        SyntaxKind.SimpleMemberAccessExpression, ID(receiver), ID(field)
       );
     }
 
@@ -193,13 +204,14 @@ namespace terradota {
     }
 
     private ClassDeclarationSyntax SetTooltip(ClassDeclarationSyntax cls, string tip) {
-      return UpdateClassMember(cls, "SetStaticDefaults", Func("SetStaticDefaults", "void", true, true, SyntaxFactory.Block(
-        CallSet(Access("Tooltip", "SetDefault"), new ArgumentSyntax[] { SyntaxFactory.Argument(StrLit(tip)) })
+      return UpdateClassMember(cls, "SetStaticDefaults", Func("SetStaticDefaults", "void", true, true, SyntaxFactory.ParameterList(),
+        SyntaxFactory.Block(
+          CallSet(Access("Tooltip", "SetDefault"), new ArgumentSyntax[] { SyntaxFactory.Argument(StrLit(tip)) })
         )));
     }
 
     private ClassDeclarationSyntax SetDefault(ClassDeclarationSyntax cls, DefaultData @default) {
-      return UpdateClassMember(cls, "SetDefaults", Func("SetDefaults", "void", true, true, SyntaxFactory.Block(
+      return UpdateClassMember(cls, "SetDefaults", Func("SetDefaults", "void", true, true, SyntaxFactory.ParameterList(), SyntaxFactory.Block(
         CallSet(Access("Item", "SetNameOverride"), new ArgumentSyntax[] { SyntaxFactory.Argument(StrLit(@default.showName)) }),
         Assign(Access("Item", "damage"), IntLit(@default.damage))
       )));
