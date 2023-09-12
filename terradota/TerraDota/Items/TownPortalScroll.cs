@@ -24,6 +24,8 @@ namespace TerraDota.Items
 
         public override bool? UseItem(Player player)
         {
+            player.FindSpawn();
+            player.Teleport(new Vector2(player.spawnX, player.spawnY));
             return true;
         }
     }
